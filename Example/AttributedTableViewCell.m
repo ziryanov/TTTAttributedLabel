@@ -92,17 +92,13 @@ static inline NSRegularExpression * ParenthesisRegularExpression() {
 
 - (void)setSummaryText:(NSString *)text {
     _summaryText = [text copy];
-}
-
-- (void)drawRect:(CGRect)rect {
-    [super drawRect:rect];
     
     [self.summaryLabel setText:self.summaryText afterInheritingLabelAttributesAndConfiguringWithBlock:^NSMutableAttributedString *(NSMutableAttributedString *mutableAttributedString) {
         NSRange stringRange = NSMakeRange(0, [mutableAttributedString length]);
         
         NSRegularExpression *regexp = NameRegularExpression();
         NSRange nameRange = [regexp rangeOfFirstMatchInString:[mutableAttributedString string] options:0 range:stringRange];
-        UIFont *boldSystemFont = [UIFont boldSystemFontOfSize:kEspressoDescriptionTextFontSize];
+        UIFont *boldSystemFont = [UIFont boldSystemFontOfSize:kEspressoDescriptionTextFontSize]; 
         CTFontRef boldFont = CTFontCreateWithName((__bridge CFStringRef)boldSystemFont.fontName, boldSystemFont.pointSize, NULL);
         if (boldFont) {
             [mutableAttributedString removeAttribute:(__bridge NSString *)kCTFontAttributeName range:nameRange];
@@ -125,7 +121,7 @@ static inline NSRegularExpression * ParenthesisRegularExpression() {
                 [mutableAttributedString addAttribute:(NSString *)kCTForegroundColorAttributeName value:(__bridge id)[[UIColor grayColor] CGColor] range:result.range];
             }
         }];
-        
+
         return mutableAttributedString;
     }];
     
@@ -133,8 +129,6 @@ static inline NSRegularExpression * ParenthesisRegularExpression() {
     NSRange linkRange = [regexp rangeOfFirstMatchInString:self.summaryText options:0 range:NSMakeRange(0, [self.summaryText length])];
     NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"http://en.wikipedia.org/wiki/%@", [self.summaryText substringWithRange:linkRange]]];
     [self.summaryLabel addLinkToURL:url withRange:linkRange];
-    
-    [self.summaryLabel setNeedsDisplay];
 }
 
 + (CGFloat)heightForCellWithText:(NSString *)text {
@@ -159,8 +153,6 @@ static inline NSRegularExpression * ParenthesisRegularExpression() {
     self.detailTextLabel.hidden = YES;
         
     self.summaryLabel.frame = CGRectOffset(CGRectInset(self.bounds, 20.0f, 5.0f), -10.0f, 0.0f);
-    
-    [self setNeedsDisplay];
 }
 
 #pragma mark - UIAccessibilityContainer

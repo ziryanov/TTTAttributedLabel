@@ -88,13 +88,9 @@ static inline NSRegularExpression * ParenthesisRegularExpression() {
     self.title = NSLocalizedString(@"Espresso", nil);
     
     self.attributedLabel.delegate = self;
-    UIFont *f = [UIFont systemFontOfSize:kEspressoDescriptionTextFontSize];
-    self.attributedLabel.font = f;
+    self.attributedLabel.font = [UIFont systemFontOfSize:kEspressoDescriptionTextFontSize];
     self.attributedLabel.textColor = [UIColor darkGrayColor];
     self.attributedLabel.lineBreakMode = UILineBreakModeWordWrap;
-    self.attributedLabel.leading = -100;
-    self.attributedLabel.maximumLineHeight = f.lineHeight;
-    self.attributedLabel.minimumLineHeight = f.lineHeight;
     self.attributedLabel.numberOfLines = 0;
     self.attributedLabel.linkAttributes = [NSDictionary dictionaryWithObject:[NSNumber numberWithBool:YES] forKey:(NSString *)kCTUnderlineStyleAttributeName];
     

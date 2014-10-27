@@ -170,8 +170,6 @@ static inline NSDictionary * NSAttributedStringAttributesFromLabel(TTTAttributed
         NSMutableParagraphStyle *paragraphStyle = [[NSMutableParagraphStyle alloc] init];
         paragraphStyle.alignment = label.textAlignment;
         paragraphStyle.lineSpacing = label.lineSpacing;
-        paragraphStyle.minimumLineHeight = label.minimumLineHeight > 0 ? label.minimumLineHeight : label.font.lineHeight * label.lineHeightMultiple;
-        paragraphStyle.maximumLineHeight = label.maximumLineHeight > 0 ? label.maximumLineHeight : label.font.lineHeight * label.lineHeightMultiple;
         paragraphStyle.lineHeightMultiple = label.lineHeightMultiple;
         paragraphStyle.firstLineHeadIndent = label.firstLineIndent;
         paragraphStyle.headIndent = paragraphStyle.firstLineHeadIndent;
@@ -193,8 +191,6 @@ static inline NSDictionary * NSAttributedStringAttributesFromLabel(TTTAttributed
 
         CTTextAlignment alignment = CTTextAlignmentFromTTTTextAlignment(label.textAlignment);
         CGFloat lineSpacing = label.lineSpacing;
-        CGFloat minimumLineHeight = label.minimumLineHeight * label.lineHeightMultiple;
-        CGFloat maximumLineHeight = label.maximumLineHeight * label.lineHeightMultiple;
         CGFloat lineSpacingAdjustment = CGFloat_ceil(label.font.lineHeight - label.font.ascender + label.font.descender);
         CGFloat lineHeightMultiple = label.lineHeightMultiple;
         CGFloat firstLineIndent = label.firstLineIndent;
@@ -204,19 +200,17 @@ static inline NSDictionary * NSAttributedStringAttributesFromLabel(TTTAttributed
             lineBreakMode = CTLineBreakModeFromTTTLineBreakMode(label.lineBreakMode);
         }
 
-        CTParagraphStyleSetting paragraphStyles[12] = {
+        CTParagraphStyleSetting paragraphStyles[10] = {
             {.spec = kCTParagraphStyleSpecifierAlignment, .valueSize = sizeof(CTTextAlignment), .value = (const void *)&alignment},
             {.spec = kCTParagraphStyleSpecifierLineBreakMode, .valueSize = sizeof(CTLineBreakMode), .value = (const void *)&lineBreakMode},
             {.spec = kCTParagraphStyleSpecifierLineSpacing, .valueSize = sizeof(CGFloat), .value = (const void *)&lineSpacing},
-            {.spec = kCTParagraphStyleSpecifierMinimumLineSpacing, .valueSize = sizeof(CGFloat), .value = (const void *)&minimumLineHeight},
-            {.spec = kCTParagraphStyleSpecifierMaximumLineSpacing, .valueSize = sizeof(CGFloat), .value = (const void *)&maximumLineHeight},
             {.spec = kCTParagraphStyleSpecifierLineSpacingAdjustment, .valueSize = sizeof (CGFloat), .value = (const void *)&lineSpacingAdjustment},
             {.spec = kCTParagraphStyleSpecifierLineHeightMultiple, .valueSize = sizeof(CGFloat), .value = (const void *)&lineHeightMultiple},
             {.spec = kCTParagraphStyleSpecifierFirstLineHeadIndent, .valueSize = sizeof(CGFloat), .value = (const void *)&firstLineIndent},
         };
 
-        CTParagraphStyleRef paragraphStyle = CTParagraphStyleCreate(paragraphStyles, 12);
 
+        CTParagraphStyleRef paragraphStyle = CTParagraphStyleCreate(paragraphStyles, 10);
         [mutableAttributes setObject:(__bridge id)paragraphStyle forKey:(NSString *)kCTParagraphStyleAttributeName];
 
         CFRelease(paragraphStyle);
@@ -759,9 +753,6 @@ static inline CGSize CTFramesetterSuggestFrameSizeForAttributedStringWithConstra
         CGContextSetTextPosition(c, lineOrigin.x, lineOrigin.y);
         CTLineRef line = CFArrayGetValueAtIndex(lines, lineIndex);
 
-        CGFloat descent = 0.0f;
-        CTLineGetTypographicBounds((CTLineRef)line, NULL, &descent, NULL);
-
         // Adjust pen offset for flush depending on text alignment
         CGFloat flushFactor = TTTFlushFactorForTextAlignment(self.textAlignment);
 
@@ -830,8 +821,8 @@ static inline CGSize CTFramesetterSuggestFrameSizeForAttributedStringWithConstra
                 }
 
                 CGFloat penOffset = (CGFloat)CTLineGetPenOffsetForFlush(truncatedLine, flushFactor, rect.size.width);
-                CGContextSetTextPosition(c, penOffset, lineOrigin.y - descent - self.font.descender);
 
+                CGContextSetTextPosition(c, penOffset, lineOrigin.y);
                 CTLineDraw(truncatedLine, c);
 
                 CFRelease(truncatedLine);
@@ -839,12 +830,10 @@ static inline CGSize CTFramesetterSuggestFrameSizeForAttributedStringWithConstra
                 CFRelease(truncationToken);
             } else {
                 CGFloat penOffset = (CGFloat)CTLineGetPenOffsetForFlush(line, flushFactor, rect.size.width);
-                CGContextSetTextPosition(c, penOffset, lineOrigin.y - descent - self.font.descender);
                 CTLineDraw(line, c);
             }
         } else {
             CGFloat penOffset = (CGFloat)CTLineGetPenOffsetForFlush(line, flushFactor, rect.size.width);
-            CGContextSetTextPosition(c, penOffset, lineOrigin.y - descent - self.font.descender);
             CTLineDraw(line, c);
         }
     }
@@ -1618,14 +1607,6 @@ afterInheritingLabelAttributesAndConfiguringWithBlock:(NSMutableAttributedString
 
     if ([coder containsValueForKey:NSStringFromSelector(@selector(lineSpacing))]) {
         self.lineSpacing = [[coder decodeObjectForKey:NSStringFromSelector(@selector(lineSpacing))] floatValue];
-    }
-
-    if ([coder containsValueForKey:NSStringFromSelector(@selector(minimumLineHeight))]) {
-        self.minimumLineHeight = [[coder decodeObjectForKey:NSStringFromSelector(@selector(minimumLineHeight))] floatValue];
-    }
-
-    if ([coder containsValueForKey:NSStringFromSelector(@selector(maximumLineHeight))]) {
-        self.maximumLineHeight = [[coder decodeObjectForKey:NSStringFromSelector(@selector(maximumLineHeight))] floatValue];
     }
 
     if ([coder containsValueForKey:NSStringFromSelector(@selector(lineHeightMultiple))]) {
