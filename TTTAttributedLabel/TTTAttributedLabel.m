@@ -1341,12 +1341,22 @@ afterInheritingLabelAttributesAndConfiguringWithBlock:(NSMutableAttributedString
     if (!self.attributedText) {
         return [super sizeThatFits:size];
     } else {
+        if (size.width != TTTFLOAT_MAX)
+            size.width = self.frame.size.width;
         size = CTFramesetterSuggestFrameSizeForAttributedStringWithConstraints([self framesetter], self.attributedText, size, (NSUInteger)self.numberOfLines);
         size.width += self.textInsets.left + self.textInsets.right;
         size.height += self.textInsets.top + self.textInsets.bottom;
 
         return size;
     }
+}
+
+- (void)setBounds:(CGRect)bounds
+{
+    BOOL needReload = bounds.size.width != self.bounds.size.width;
+    [super setBounds:bounds];
+    if (needReload)
+        [self invalidateIntrinsicContentSize];
 }
 
 - (CGSize)intrinsicContentSize {
